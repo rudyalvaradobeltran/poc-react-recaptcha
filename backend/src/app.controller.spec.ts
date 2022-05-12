@@ -17,7 +17,9 @@ describe('AppController', () => {
   describe('root', () => {
     it('should return name', () => {
       const data = { name: 'John Doe' };
-      expect(appController.save(data)).toBe(data.name);
+      expect(appController.save(data)).toBe(
+        `Hello ${data.name} from the server`,
+      );
     });
   });
 });
