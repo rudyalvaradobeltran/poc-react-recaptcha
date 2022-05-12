@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { DataDTO } from './dto/Data.dto';
 
@@ -7,8 +7,12 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Post('save')
-  async save(@Body() data: DataDTO): Promise<string> {
-    console.log('data: ', data);
+  save(@Body() data: DataDTO): string {
     return this.appService.save(data.name);
+  }
+
+  @Get('sitekey')
+  sitekey(): string {
+    return process.env.sitekey;
   }
 }

@@ -1,36 +1,57 @@
-import React, { useState, useEffect } from 'react'
-import logo from './logo.svg'
-import ReCAPTCHA from 'react-google-recaptcha'
-import './App.css'
+import React, { useState, useCallback, useEffect } from "react";
+import logo from "./logo.svg";
+import ReCAPTCHA from "react-google-recaptcha";
+import "./App.css";
 
 const App = () => {
-  const [name, setName] = useState('')
-  const [recaptcha, setRecaptcha] = useState('')
+  const [name, setName] = useState("");
+  const [recaptcha, setRecaptcha] = useState("");
+  const [sitekey, setSitekey] = useState("");
+  const [response, setResponse] = useState("");
 
-  const recaptchaRef = React.createRef()
+  const recaptchaRef = React.createRef();
 
   useEffect(() => {
-    if (name && recaptcha) {
-      fetch('http://localhost:4000/data/save', {
-        method: 'POST',
-        headers: {
-          Token: recaptcha,
-        },
-        body: JSON.stringify({name}),
-      })
-    }
-  }, [name, recaptcha])
+    getSitekey();
+  }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    recaptchaRef.current.execute()
-  }
+  useEffect(() => {
+    recaptchaRef.current.execute();
+  }, [sitekey]);
+
+  const getSitekey = async () => {
+    const key = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/data/sitekey`
+    ).then((body) => body.text());
+    setSitekey(key);
+  };
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (name && recaptcha) {
+        const hello = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/data/save`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Token: recaptcha,
+            },
+            body: JSON.stringify({ name }),
+          }
+        ).then((body) => body.text());
+        setResponse(hello);
+      }
+    },
+    [name, recaptcha]
+  );
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
+        <p>{response || "Hello Vite + React!"}</p>
         <form onSubmit={(e) => handleSubmit(e)}>
           <input
             id="name"
@@ -42,14 +63,14 @@ const App = () => {
           <ReCAPTCHA
             ref={recaptchaRef}
             size="invisible"
-            sitekey="6LdssNkfAAAAAOSD5-R6RBsSRu4V_VmsSVpoC7yk"
+            sitekey={sitekey}
             onChange={setRecaptcha}
           />
           <button type="submit">Send</button>
         </form>
       </header>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

@@ -4,6 +4,6 @@ import { Injectable } from '@nestjs/common';
 export class AppService {
   save(data: string): string {
     // save
-    return data;
+    return `Hello ${data} from the server`;
   }
 }

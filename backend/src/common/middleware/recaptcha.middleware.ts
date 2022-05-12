@@ -10,12 +10,31 @@ export const ReCaptchaMiddleware = async (
   const http = new HttpService();
   const validReCaptcha = await lastValueFrom(
     http.post(
-      `https://www.google.com/recaptcha/api/siteverify?secret=6LdssNkfAAAAAFbxH3QRJ6at4TuCDKpfG1Bs44NP&response=${req.headers.token}`,
+      `${process.env.google_verify}?secret=${process.env.secret}&response=${req.headers.token}`,
       {
         method: 'POST',
       },
     ),
   );
-  if (validReCaptcha.data.success) return next();
-  res.sendStatus(401).send('Invalid token');
+  if (validReCaptcha.data.success) {
+    next();
+    return;
+  }
+  res.statusCode = 400;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Invalid token');
+};
+
+export const OriginMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.headers.origin === process.env.frontend_url) {
+    next();
+    return;
+  }
+  res.statusCode = 401;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Unauthorized');
 };
